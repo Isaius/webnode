@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <style>
+    :root {
+        background-color: azure;
+        display: flex;
+        justify-content: center;
+    }
+    html, body {
+        height: 100%;
+        justify-content: center
+    }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    #to {
+      width: 600px;
+    }
+
+    #subject {
+      width: 569px;
+      margin-top: 5px;
+    }
+
+    #body {
+      margin-top: 15px;
+      width: 600px;
+      height: 600px;
+      margin-left: 24px;
+    }
+
+    #button {
+      display: flex;
+      justify-content: flex-end;
+      align-content: flex-end;
+    }
+
+    #button button {
+        margin-left: 5px;
+        width: 4vw;
+        background-color: coral;
+    }
+  </style>
+
+  <title>Send Mail</title>
+</head>
+<body>
+  <div id="mail-div">
+      <label for="to">To: </label>
+      <input type="text" id="to" name="to"/>
+      <p>
+      <label for="subject">Subject: </label>
+      <input type="text" id="subject" name="subject"/>
+      <p>
+      <textarea id="body" name="body"></textarea>
+      <p>
+  
+      <div id="button">
+        <button id="button" onclick=send() >Send</button>
+      </div>
+  </div>
+
+  <script type="text/javascript">
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const user = urlParams.get('username')
+
+    function send(){
+      const to = document.getElementById("to").value
+      const subject = document.getElementById("subject").value
+      const body = document.getElementById("body").value
+      const url = `http://localhost:3333/`
+
+      email = {
+        from: user,
+        to: to,
+        subject: subject,
+        body: body,
+        uuid: "",
+        replies: []
+      }
+
+      axios.post(url, JSON.stringify(email)).then(() => {
+        document.location.href = `http://localhost:3333/inbox.html?username=${user}`
+      })
+    }
+</script>
+</body>
+</html>

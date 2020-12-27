@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <style>
+    :root {
+        background-color: azure;
+        display: flex;
+        justify-content: center;
+    }
+    html, body {
+        height: 100%;
+        justify-content: center
+    }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    #to {
+      width: 600px;
+    }
+
+    #subject {
+      width: 569px;
+      margin-top: 5px;
+    }
+
+    #body {
+      margin-top: 15px;
+      width: 600px;
+      height: 600px;
+      margin-left: 24px;
+    }
+
+    #button {
+      display: flex;
+      justify-content: flex-end;
+      align-content: flex-end;
+    }
+
+    #button button {
+        margin-left: 5px;
+        width: 4vw;
+        background-color: coral;
+    }
+  </style>
+
+  <title>Encaminhar</title>
+</head>
+<body onload=getEmail() >
+  <div id="mail-div">
+      <div id="preview">
+
+      </div>
+      <p>
+        
+        . . .
+
+      </p>
+      <div id="input-div">
+        <label for="to">To: </label>
+        <input type="text" id="to" name="to"/>
+      </div>
+      <p>
+  
+      <div id="button">
+        <button id="button" onclick=send() >Send</button>
+      </div>
+  </div>
+
+  <script type="text/javascript">
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const user = urlParams.get('user')
+    const uuid = urlParams.get('uuid')
+
+    function getEmail(){
+      const url = `http://localhost:3333/mail/${uuid}`
+
+      axios.get(url).then(response => {
+        email = response.data
+        showEmail(email)
+
+        if(email.replies){
+          showEmail(email.replies[0])
+        }
+      })
+    }
+  
+  function showEmail(email){
+    const div = document.createElement('div')
+    div.classList.add('email')
+    const span = document.createElement('div')
+    span.innerHTML = `<p><strong>${email.from}</strong><p>${email.body}</>`
+    div.append(span)
+    document.getElementById("preview").append(div)
+  }
+    
+  function send(){
+    const to = document.getElementById("to").value
+    const url = `http://localhost:3333/foward/${uuid}/${to}`
+
+    axios.put(url).then(() => {
+      document.location.href = `http://localhost:3333/inbox.html?username=${user}`
+    })
+  }
+</script>
+</body>
+</html>
