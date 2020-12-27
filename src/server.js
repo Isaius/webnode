@@ -5,7 +5,7 @@ const uuid = require('uuid4')
 
 const host = 'https://lowebmail.herokuapp.com/'
 // const host = 'localhost'
-const port =  process.env.PORT || 3333
+const port =  process.argv[2]
 
 const server = http.createServer(async(req, res) => {
   // parse the URL string to an JS object
