@@ -266,10 +266,14 @@ function writeEmail(email){
   fs.writeFile("./mails/" + email.uuid + '.json', JSON.stringify(email), 'utf-8', (err) => {
     console.log("Email created successfuly.")
   })
+
+  console.log(`updated email ${email.uuid}`)
 }
 
 function writeInbox(user, inbox){
   fs.writeFile("./users/" + user + 'inbox.json', JSON.stringify(inbox), 'utf-8', (err) => {
     console.log("Inbox created successfuly.")
   })
+
+  console.log(`updated inbox ${user}`)
 }
