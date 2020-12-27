@@ -6,7 +6,7 @@
   "author": "Isaias <isaigrec@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/server.js ",
     "dev": "node src/server.js --ignore-watch node_modules"
   },
   "devDependencies": {
