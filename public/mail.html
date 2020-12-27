@@ -74,7 +74,7 @@
 
     function getEmail(){
         
-      const url = `http://localhost:3333/mail/${uuid}`
+      const url = `https://lowebmail.herokuapp.com/mail/${uuid}`
 
       axios.get(url).then(response => {
           email = response.data
@@ -101,7 +101,7 @@
 
     function reply(){
       const reply = document.getElementById("reply").value
-      const url = `http://localhost:3333/mail/${uuid}`
+      const url = `https://lowebmail.herokuapp.com/mail/${uuid}`
 
       email = {
         from: user,

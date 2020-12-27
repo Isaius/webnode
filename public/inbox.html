@@ -67,7 +67,7 @@
 
     function getInbox(){
         
-      const url = `http://localhost:3333/inbox/${user}`
+      const url = `https://lowebmail.herokuapp.com/inbox/${user}`
       axios.get(url).then(response => {
           console.log(response)
           emails = response.data
@@ -79,7 +79,7 @@
     }
 
     function sendEmail(){
-      document.location.href = `http://localhost:3333/write.html/?username=${user}`
+      document.location.href = `https://lowebmail.herokuapp.com/write.html/?username=${user}`
     }
 
     function makeEmailItem(email){
@@ -120,17 +120,17 @@
     }
 
     function openEmail(uuid){
-      document.location.href = `http://localhost:3333/mail.html?user=${user}&&uuid=${uuid}`
+      document.location.href = `https://lowebmail.herokuapp.com/mail.html?user=${user}&&uuid=${uuid}`
     }
 
     function fowardEmail(uuid){
-      document.location.href = `http://localhost:3333/foward.html?user=${user}&&uuid=${uuid}`
+      document.location.href = `https://lowebmail.herokuapp.com/foward.html?user=${user}&&uuid=${uuid}`
     }
 
     function deleteEmail(uuid){
-      const url = `http://localhost:3333/mail/${uuid}/${user}`
+      const url = `https://lowebmail.herokuapp.com/mail/${uuid}/${user}`
       axios.delete(url).then(() => {
-        document.location.href = `http://localhost:3333/inbox.html?username=${user}`
+        document.location.href = `https://lowebmail.herokuapp.com/inbox.html?username=${user}`
       })
     }
 </script>

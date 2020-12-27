@@ -80,7 +80,7 @@
     const uuid = urlParams.get('uuid')
 
     function getEmail(){
-      const url = `http://localhost:3333/mail/${uuid}`
+      const url = `https://lowebmail.herokuapp.com/mail/${uuid}`
 
       axios.get(url).then(response => {
         email = response.data
@@ -103,10 +103,10 @@
     
   function send(){
     const to = document.getElementById("to").value
-    const url = `http://localhost:3333/foward/${uuid}/${to}`
+    const url = `https://lowebmail.herokuapp.com/foward/${uuid}/${to}`
 
     axios.put(url).then(() => {
-      document.location.href = `http://localhost:3333/inbox.html?username=${user}`
+      document.location.href = `https://lowebmail.herokuapp.com/inbox.html?username=${user}`
     })
   }
 </script>

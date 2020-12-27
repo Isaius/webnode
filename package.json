@@ -6,7 +6,8 @@
   "author": "Isaias <isaigrec@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon src/server.js --ignore-watch node_modules"
+    "start": "node src/server.js",
+    "dev": "node src/server.js --ignore-watch node_modules"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"
