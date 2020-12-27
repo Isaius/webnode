@@ -5,7 +5,7 @@ const uuid = require('uuid4')
 
 const host = 'https://lowebmail.herokuapp.com/'
 // const host = 'localhost'
-const port =  process.argv[2]
+const port =  process.env.PORT
 
 const server = http.createServer(async(req, res) => {
   // parse the URL string to an JS object
@@ -197,7 +197,7 @@ const server = http.createServer(async(req, res) => {
 })
 
 // start server and listen to the port
-server.listen(port, host)
+server.listen(port)
 
 
 function addEmailToUserInbox(user, uuid) {
