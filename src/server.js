@@ -4,7 +4,7 @@ const fs = require('fs')
 const uuid = require('uuid4')
 
 const host = 'localhost'
-const port = 3333
+const port = 3333 || process.env.PORT
 
 const server = http.createServer(async(req, res) => {
   // parse the URL string to an JS object
