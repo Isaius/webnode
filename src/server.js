@@ -9,8 +9,12 @@ const crypto = require('crypto')
 const { executeQuery } = require('./database/connection')
 
 async function connect(){
-  response = await executeQuery('CREATE TABLE emails ( from varchar(255), to varchar(255), subject varchar(255), body varchar(255), uuid varchar(255), replies varchar(255),)')
-  console.log(response)
+  try {
+    response = await executeQuery('CREATE TABLE emails ( from varchar(255), to varchar(255), subject varchar(255), body varchar(255), uuid varchar(255), replies varchar(255),)')
+    console.log(response)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const axios = axiosAgent.create({
