@@ -6,8 +6,10 @@
   "author": "Isaias <isaigrec@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "prestart": "npm run knex:migrate",
     "start": "node src/server.js ",
-    "dev": "nodemon src/server.js --ignore-watch node_modules"
+    "dev": "nodemon src/server.js --ignore-watch node_modules",
+    "knex:migrate": "knex --knexfile knexfile.js migrate:latest"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"
