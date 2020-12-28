@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node src/server.js ",
-    "dev": "node src/server.js --ignore-watch node_modules"
+    "dev": "nodemon src/server.js --ignore-watch node_modules"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"
