@@ -106,3 +106,4 @@ dist
 # content folder
 mails/*.json
 users/*.json
+*.txt

@@ -2,10 +2,22 @@ const http = require('http')
 const url = require('url')
 const fs = require('fs')
 const uuid = require('uuid4')
+const axiosAgent = require('axios')
+const dotenv = require('dotenv').config()
+const FormData = require('form-data')
+const crypto = require('crypto')
 
-const host = 'https://lowebmail.herokuapp.com/'
-// const host = 'localhost'
-const port =  process.env.PORT
+const hash = crypto.createHash('sha1')
+
+const axios = axiosAgent.create({
+  headers: { 
+    'Content-Type': 'multipart/form-data'
+  }
+})
+
+const baseURL = `https://pastebin.com/api/api_post.php`
+
+const port =  process.env.PORT || 3333
 
 const server = http.createServer(async(req, res) => {
   // parse the URL string to an JS object
@@ -81,6 +93,17 @@ const server = http.createServer(async(req, res) => {
       res.end(data) 
     })
   }
+
+
+  if(req.method == 'GET' && params[1] == 'test'){
+    content = getResponseText()
+    parsePaste(content)
+
+    res.statusCode = 200
+    res.setHeader('content-Type', 'Application/json')
+    res.end()
+  }
+
   // GET MAIL
   if(req.method == 'GET' && params[1] == 'inbox'){
     user = params[2]
@@ -109,7 +132,7 @@ const server = http.createServer(async(req, res) => {
     emailUuid = params[2]
 
     try {
-      requestedEmail = getEmail(emailUuid)
+      requestedEmail = await getEmail(emailUuid)
 
       res.statusCode = 200
       res.setHeader('content-Type', 'Application/json')
@@ -127,11 +150,11 @@ const server = http.createServer(async(req, res) => {
       content += chunk
     })
 
-    req.on('end', function(){
+    req.on('end', async function(){
       body = JSON.parse(content)
       body.uuid = uuid()
 
-      writeEmail(body)
+      await writeEmail(body)
       addEmailToUserInbox(body.to, body.uuid)
       addEmailToUserInbox(body.from, body.uuid)
     })
@@ -256,24 +279,118 @@ function getUserInbox(user){
   return JSON.parse(content)
 }
 
-function getEmail(uuid){
-  content = fs.readFileSync(`./mails/${uuid}.json`)
+async function getEmail(uuid){
+  pastes = await getAllPaste()
 
-  return JSON.parse(content)
+  emailPaste = pastes.emails.find(paste => paste.uuid == uuid)
+  content = await getThisPaste(emailPaste.pasteKey)
+  
+  return content
 }
 
-function writeEmail(email){
-  fs.writeFile("./mails/" + email.uuid + '.json', JSON.stringify(email), 'utf-8', (err) => {
-    console.log("Email created successfuly.")
-  })
+async function writeEmail(email){
+  await pasteThis(email)
 
   console.log(`updated email ${email.uuid}`)
 }
 
-function writeInbox(user, inbox){
-  fs.writeFile("./users/" + user + 'inbox.json', JSON.stringify(inbox), 'utf-8', (err) => {
-    console.log("Inbox created successfuly.")
-  })
+async function writeInbox(user, inbox){
+  await pasteThis({user, inbox})
 
   console.log(`updated inbox ${user}`)
+}
+
+async function pasteThis(content){
+  var formData = new FormData()
+
+  formData.append('api_dev_key', process.env.API_DEV_KEY)
+  formData.append('api_user_key', process.env.API_USER_KEY)
+  formData.append('api_option', 'paste')
+  formData.append('api_paste_code', JSON.stringify(content))
+  
+  if(content.uuid){
+    formData.append('api_paste_name', content.uuid)
+  } else {
+    hash.update(content.user)
+    hexHash = hash.digest('hex')
+
+    formData.append('api_paste_name', `inbox$${hexHash}`)
+  }
+  
+  try {
+    const response = await axios.post(baseURL, formData, {
+      headers: {
+        'Content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
+      }
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function getAllPaste(){
+  var formData = new FormData()
+
+  formData.append('api_dev_key', process.env.API_DEV_KEY)
+  formData.append('api_user_key', process.env.API_USER_KEY)
+  formData.append('api_option', 'list')
+
+  try {
+    const response = await axios.post('https://pastebin.com/api/api_raw.php', formData, {
+      headers: {
+        'Content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
+      }
+    })
+
+    return parsePaste(response.data)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+function getResponseText(){
+  content = fs.readFileSync(`./response.txt`)
+  
+  return content.toString()
+}
+
+function parsePaste(pastes){
+  pastesList = pastes.split('</paste>')
+  usersInboxPastes = []
+  emailsPastes = []
+
+  pastesList.map(paste => {
+    indexStartTitle = paste.indexOf('paste_title') + 12 // 11 is "paste_title>" length
+    indexEndTitle = paste.indexOf('</paste_title')
+    index = paste.indexOf('paste_key')+10
+    
+    pasteTitle = paste.slice(indexStartTitle, indexEndTitle)
+    pasteKey = paste.slice(index, index+8) // the pastes key always have 8 characters
+
+    index = pasteTitle.indexOf('$')
+
+    if(index > -1){
+      usersInboxPastes.push({
+        userHash: pasteTitle.slice(index+1),
+        pasteKey
+      })
+    } else {
+      emailsPastes.push({
+        uuid: pasteTitle,
+        pasteKey
+      })
+    }
+  })
+
+  return { usersInbox: usersInboxPastes, emails: emailsPastes }
+}
+
+async function getThisPaste(pasteKey){
+  try {
+    const response = await axios.get(`https://pastebin.com/raw/${pasteKey}`)
+
+    return response.data
+  } catch (error) {
+    console.log(error)
+  }
 }
