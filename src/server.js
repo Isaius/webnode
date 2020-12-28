@@ -6,10 +6,10 @@ const axiosAgent = require('axios')
 const dotenv = require('dotenv').config()
 const FormData = require('form-data')
 const crypto = require('crypto')
-const bd = require('./database/connection')
+const { executeQuery } = require('./database/connection')
 
 async function connect(){
-  response = await bd('emails').select()
+  response = await executeQuery('CREATE TABLE emails ( from varchar(255), to varchar(255), subject varchar(255), body varchar(255), uuid varchar(255), replies varchar(255),)')
   console.log(response)
 }
 
