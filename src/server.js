@@ -1,13 +1,11 @@
 const http = require('http')
 const url = require('url')
 const fs = require('fs')
-const uuid = require('uuid4')
+const uuid4 = require('uuid4')
 const axiosAgent = require('axios')
 const dotenv = require('dotenv').config()
 const FormData = require('form-data')
 const crypto = require('crypto')
-
-const hash = crypto.createHash('sha1')
 
 const axios = axiosAgent.create({
   headers: { 
@@ -109,7 +107,7 @@ const server = http.createServer(async(req, res) => {
     user = params[2]
     
     try {
-      emails = getEmailsFromUser(user)
+      emails = await getEmailsFromUser(user)
       inbox = []
 
       emails.map(email => {
@@ -124,6 +122,7 @@ const server = http.createServer(async(req, res) => {
       res.setHeader('content-Type', 'Application/json')
       res.end(JSON.stringify(inbox))
     } catch (error) {
+      console.log(error)
       res.statusCode = 400
       res.setHeader('content-Type', 'Application/json')
       res.end(JSON.stringify({ message: "user incorrect or not found" }))
@@ -152,7 +151,7 @@ const server = http.createServer(async(req, res) => {
 
     req.on('end', async function(){
       body = JSON.parse(content)
-      body.uuid = uuid()
+      body.uuid = uuid4()
 
       await writeEmail(body)
       addEmailToUserInbox(body.to, body.uuid)
@@ -257,32 +256,50 @@ function addEmailReply(uuid, reply){
   writeEmail(email)
 }
 
-function getEmailsFromUser(user){
-  emailList = getUserInbox(user)
-
-  return getEmailsContent(emailList.inbox)
+async function getEmailsFromUser(user){
+  response = await getUserInbox(user)
+  emailList = response.inbox.inbox
+  
+  return await getEmailsContent(emailList)
 }
 
-function getEmailsContent(mailList){
-  emailList = []
+async function getUserInbox(user){
+  pastes = await getAllPaste()
+  
+  const hash = crypto.createHash('sha1')
+  hash.update(user)
+  userHash = hash.digest('hex')
+  
+  userPaste = pastes.usersInbox.find(paste => paste.userHash == userHash)
+  
+  content = await getThisPaste(userPaste.pasteKey)
+  
+  return content
+}
 
-  mailList.map(uuid => {
-    emailList.push(getEmail(uuid))
-  })
+async function getEmailsContent(mailList){
+  emailList = []
+  
+  for(i = 0; i < mailList.length; i++){
+    email = await getEmail(mailList[i])
+    emailList[i] = email
+  }
   
   return emailList
 }
 
-function getUserInbox(user){
-  content = fs.readFileSync(`./users/${user}inbox.json`)
-
-  return JSON.parse(content)
-}
-
 async function getEmail(uuid){
   pastes = await getAllPaste()
+  console.log(pastes)
+  var emailPaste
+ 
+  await pastes.emails.map(paste => {
+    if(paste.uuid == uuid){
+      emailPaste = paste
+      console.log(emailPaste)
+    }
+  })
 
-  emailPaste = pastes.emails.find(paste => paste.uuid == uuid)
   content = await getThisPaste(emailPaste.pasteKey)
   
   return content
@@ -311,10 +328,11 @@ async function pasteThis(content){
   if(content.uuid){
     formData.append('api_paste_name', content.uuid)
   } else {
+    const hash = crypto.createHash('sha1')
     hash.update(content.user)
     hexHash = hash.digest('hex')
 
-    formData.append('api_paste_name', `inbox$${hexHash}`)
+    formData.append('api_paste_name', `${user}$${hexHash}`)
   }
   
   try {
@@ -329,6 +347,9 @@ async function pasteThis(content){
 }
 
 async function getAllPaste(){
+
+  // return parsePaste(getResponseText())
+
   var formData = new FormData()
 
   formData.append('api_dev_key', process.env.API_DEV_KEY)
@@ -360,9 +381,9 @@ function parsePaste(pastes){
   emailsPastes = []
 
   pastesList.map(paste => {
-    indexStartTitle = paste.indexOf('paste_title') + 12 // 11 is "paste_title>" length
+    indexStartTitle = paste.indexOf('paste_title') + 12 // 12 is "paste_title>" length
     indexEndTitle = paste.indexOf('</paste_title')
-    index = paste.indexOf('paste_key')+10
+    index = paste.indexOf('paste_key')+10   // +10 "paste_key>"
     
     pasteTitle = paste.slice(indexStartTitle, indexEndTitle)
     pasteKey = paste.slice(index, index+8) // the pastes key always have 8 characters
