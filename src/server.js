@@ -6,6 +6,7 @@ const axiosAgent = require('axios')
 const dotenv = require('dotenv').config()
 const FormData = require('form-data')
 const crypto = require('crypto')
+const bd = require('./database/connection')
 
 const axios = axiosAgent.create({
   headers: { 
@@ -306,9 +307,12 @@ async function getEmail(uuid){
 }
 
 async function writeEmail(email){
-  await pasteThis(email)
-
-  console.log(`updated email ${email.uuid}`)
+  try {
+    await bd('emails').insert(email)
+    console.log(`updated email ${email.uuid}`)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 async function writeInbox(user, inbox){
@@ -347,9 +351,6 @@ async function pasteThis(content){
 }
 
 async function getAllPaste(){
-
-  // return parsePaste(getResponseText())
-
   var formData = new FormData()
 
   formData.append('api_dev_key', process.env.API_DEV_KEY)
@@ -367,12 +368,6 @@ async function getAllPaste(){
   } catch (error) {
     console.log(error)
   }
-}
-
-function getResponseText(){
-  content = fs.readFileSync(`./response.txt`)
-  
-  return content.toString()
 }
 
 function parsePaste(pastes){
