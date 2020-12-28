@@ -8,6 +8,11 @@ const FormData = require('form-data')
 const crypto = require('crypto')
 const bd = require('./database/connection')
 
+async function connect(){
+  response = await bd('emails').select()
+  console.log(response)
+}
+
 const axios = axiosAgent.create({
   headers: { 
     'Content-Type': 'multipart/form-data'
@@ -19,6 +24,7 @@ const baseURL = `https://pastebin.com/api/api_post.php`
 const port =  process.env.PORT || 3333
 
 const server = http.createServer(async(req, res) => {
+  await connect()
   // parse the URL string to an JS object
   const reqURL = url.parse(req.url, true)
 
