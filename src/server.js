@@ -8,15 +8,6 @@ const FormData = require('form-data')
 const crypto = require('crypto')
 const { insertEmail } = require('./database/connection')
 
-async function connect(){
-  try {
-    response = await executeQuery('CREATE TABLE emails ( from varchar(255), to varchar(255), subject varchar(255), body varchar(255), uuid varchar(255), replies varchar(255),)')
-    console.log(response)
-  } catch (error) {
-    console.log(error)
-  }
-}
-
 const axios = axiosAgent.create({
   headers: { 
     'Content-Type': 'multipart/form-data'
@@ -28,7 +19,6 @@ const baseURL = `https://pastebin.com/api/api_post.php`
 const port =  process.env.PORT || 3333
 
 const server = http.createServer(async(req, res) => {
-  await connect()
   // parse the URL string to an JS object
   const reqURL = url.parse(req.url, true)
 
