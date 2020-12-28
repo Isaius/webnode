@@ -6,7 +6,7 @@ const axiosAgent = require('axios')
 const dotenv = require('dotenv').config()
 const FormData = require('form-data')
 const crypto = require('crypto')
-const { executeQuery } = require('./database/connection')
+const { insertEmail } = require('./database/connection')
 
 async function connect(){
   try {
@@ -318,7 +318,7 @@ async function getEmail(uuid){
 
 async function writeEmail(email){
   try {
-    await bd('emails').insert(email)
+    await insertEmail(email)
     console.log(`updated email ${email.uuid}`)
   } catch (error) {
     console.log(error)

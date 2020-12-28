@@ -17,3 +17,14 @@ exports.executeQuery = async function executeQuery(query){
     return res
   });
 }
+
+exports.insertEmail = async function insertEmail(email){
+  client.connect()
+  
+  client.query(`INSERT INTO emails VALUES(${email.from}, ${email.to}, ${emaiç.subject}, ${email.body}, ${email.uuid}, ${email.replies};`, (err, res) => {
+    if (err) throw err
+    
+    client.end()
+    return res
+  });
+}
