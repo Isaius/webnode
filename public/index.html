@@ -50,10 +50,12 @@
   </form>
 
   <script type="text/javascript">
+   const baseURL = 'http://localhost:3333'
+
     function login(){
         const username = document.getElementById("username").value
         
-        const url = `https://lowebmail.herokuapp.com/inbox/${username}`
+        const url = `${baseURL}/inbox/${username}`
         axios.get(url).then(response => {
             console.log(response)
             document.getElementById('username').value = username

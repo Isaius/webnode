@@ -5,7 +5,7 @@ const uuid = require('uuid4')
 
 const host = 'https://lowebmail.herokuapp.com/'
 // const host = 'localhost'
-const port =  process.env.PORT
+const port =  process.env.PORT || 3333
 
 const server = http.createServer(async(req, res) => {
   // parse the URL string to an JS object
@@ -101,6 +101,7 @@ const server = http.createServer(async(req, res) => {
       res.setHeader('content-Type', 'Application/json')
       res.end(JSON.stringify(inbox))
     } catch (error) {
+      console.log(error)
       res.statusCode = 400
       res.setHeader('content-Type', 'Application/json')
       res.end(JSON.stringify({ message: "user incorrect or not found" }))

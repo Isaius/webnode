@@ -69,6 +69,8 @@
   </div>
 
   <script type="text/javascript">
+   const baseURL = 'http://localhost:3333'
+
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const user = urlParams.get('username')
@@ -77,7 +79,7 @@
       const to = document.getElementById("to").value
       const subject = document.getElementById("subject").value
       const body = document.getElementById("body").value
-      const url = `https://lowebmail.herokuapp.com/`
+      const url = `${baseURL}`
 
       email = {
         from: user,
@@ -89,7 +91,7 @@
       }
 
       axios.post(url, JSON.stringify(email)).then(() => {
-        document.location.href = `https://lowebmail.herokuapp.com/inbox.html?username=${user}`
+        document.location.href = `${baseURL}inbox.html?username=${user}`
       })
     }
 </script>

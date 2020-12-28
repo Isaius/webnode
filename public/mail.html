@@ -67,6 +67,8 @@
   </div>
 
   <script type="text/javascript">
+   const baseURL = 'http://localhost:3333'
+
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const user = urlParams.get('user')
@@ -74,7 +76,7 @@
 
     function getEmail(){
         
-      const url = `https://lowebmail.herokuapp.com/mail/${uuid}`
+      const url = `${baseURL}/mail/${uuid}`
 
       axios.get(url).then(response => {
           email = response.data
@@ -101,7 +103,7 @@
 
     function reply(){
       const reply = document.getElementById("reply").value
-      const url = `https://lowebmail.herokuapp.com/mail/${uuid}`
+      const url = `${baseURL}/mail/${uuid}`
 
       email = {
         from: user,
