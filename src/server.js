@@ -220,9 +220,13 @@ function addEmailReply(uuid, reply){
 }
 
 async function getUserInbox(user){
-  const result = await  db.getUserInbox(user)
-  
-  return result
+  try {
+    const result = await db.getUserInbox(user)
+    console.log(result)
+    return result
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 async function getEmail(uuid){
