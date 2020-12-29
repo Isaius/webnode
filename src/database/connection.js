@@ -35,6 +35,7 @@ const getUserInbox = async function getUserInbox(user){
     if (err) throw err
     
     client.end()
+    console.log(res)
     return res
   });
 }

@@ -222,7 +222,6 @@ function addEmailReply(uuid, reply){
 async function getUserInbox(user){
   try {
     const result = await db.getUserInbox(user)
-    console.log(result)
     return result
   } catch (error) {
     console.log(error)
@@ -231,8 +230,6 @@ async function getUserInbox(user){
 
 async function getEmail(uuid){
   const result = await db.getEmail(uuid)
-  
-  console.log(result)
 
   return content
 }
