@@ -6,7 +6,7 @@ const axiosAgent = require('axios')
 const dotenv = require('dotenv').config()
 const FormData = require('form-data')
 const crypto = require('crypto')
-const { insertEmail } = require('./database/connection')
+const db = require('./database/connection')
 
 const axios = axiosAgent.create({
   headers: { 
@@ -93,22 +93,12 @@ const server = http.createServer(async(req, res) => {
     })
   }
 
-
-  if(req.method == 'GET' && params[1] == 'test'){
-    content = getResponseText()
-    parsePaste(content)
-
-    res.statusCode = 200
-    res.setHeader('content-Type', 'Application/json')
-    res.end()
-  }
-
   // GET MAIL
   if(req.method == 'GET' && params[1] == 'inbox'){
     user = params[2]
     
     try {
-      emails = await getEmailsFromUser(user)
+      emails = await getUserInbox(user)
       inbox = []
 
       emails.map(email => {
@@ -155,8 +145,6 @@ const server = http.createServer(async(req, res) => {
       body.uuid = uuid4()
 
       await writeEmail(body)
-      addEmailToUserInbox(body.to, body.uuid)
-      addEmailToUserInbox(body.from, body.uuid)
     })
 
     res.statusCode = 201
@@ -222,22 +210,6 @@ const server = http.createServer(async(req, res) => {
 // start server and listen to the port
 server.listen(port)
 
-
-function addEmailToUserInbox(user, uuid) {
-  try {
-    var fd = fs.openSync("./users/" + user + 'inbox.json', 'wx')
-    fs.writeSync(fd, `{"inbox": []}`)
-    fs.closeSync(fd)
-  } catch (error) {
-    // NOTHING HERE I KNOW
-  }
-
-  emailList = getUserInbox(user)
-  emailList.inbox.push(uuid)
-
-  writeInbox(user, emailList)
-}
-
 function removeEmailFromInbox(user, uuid){
   emails = getUserInbox(user)
 
@@ -257,155 +229,24 @@ function addEmailReply(uuid, reply){
   writeEmail(email)
 }
 
-async function getEmailsFromUser(user){
-  response = await getUserInbox(user)
-  emailList = response.inbox.inbox
-  
-  return await getEmailsContent(emailList)
-}
-
 async function getUserInbox(user){
-  pastes = await getAllPaste()
+  const result = await  db.getUserInbox(user)
   
-  const hash = crypto.createHash('sha1')
-  hash.update(user)
-  userHash = hash.digest('hex')
-  
-  userPaste = pastes.usersInbox.find(paste => paste.userHash == userHash)
-  
-  content = await getThisPaste(userPaste.pasteKey)
-  
-  return content
-}
-
-async function getEmailsContent(mailList){
-  emailList = []
-  
-  for(i = 0; i < mailList.length; i++){
-    email = await getEmail(mailList[i])
-    emailList[i] = email
-  }
-  
-  return emailList
+  return result
 }
 
 async function getEmail(uuid){
-  pastes = await getAllPaste()
-  console.log(pastes)
-  var emailPaste
- 
-  await pastes.emails.map(paste => {
-    if(paste.uuid == uuid){
-      emailPaste = paste
-      console.log(emailPaste)
-    }
-  })
-
-  content = await getThisPaste(emailPaste.pasteKey)
+  const result = await db.getEmail(uuid)
   
+  console.log(result)
+
   return content
 }
 
 async function writeEmail(email){
   try {
-    await insertEmail(email)
-    console.log(`updated email ${email.uuid}`)
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-async function writeInbox(user, inbox){
-  await pasteThis({user, inbox})
-
-  console.log(`updated inbox ${user}`)
-}
-
-async function pasteThis(content){
-  var formData = new FormData()
-
-  formData.append('api_dev_key', process.env.API_DEV_KEY)
-  formData.append('api_user_key', process.env.API_USER_KEY)
-  formData.append('api_option', 'paste')
-  formData.append('api_paste_code', JSON.stringify(content))
-  
-  if(content.uuid){
-    formData.append('api_paste_name', content.uuid)
-  } else {
-    const hash = crypto.createHash('sha1')
-    hash.update(content.user)
-    hexHash = hash.digest('hex')
-
-    formData.append('api_paste_name', `${user}$${hexHash}`)
-  }
-  
-  try {
-    const response = await axios.post(baseURL, formData, {
-      headers: {
-        'Content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
-      }
-    })
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-async function getAllPaste(){
-  var formData = new FormData()
-
-  formData.append('api_dev_key', process.env.API_DEV_KEY)
-  formData.append('api_user_key', process.env.API_USER_KEY)
-  formData.append('api_option', 'list')
-
-  try {
-    const response = await axios.post('https://pastebin.com/api/api_raw.php', formData, {
-      headers: {
-        'Content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
-      }
-    })
-
-    return parsePaste(response.data)
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-function parsePaste(pastes){
-  pastesList = pastes.split('</paste>')
-  usersInboxPastes = []
-  emailsPastes = []
-
-  pastesList.map(paste => {
-    indexStartTitle = paste.indexOf('paste_title') + 12 // 12 is "paste_title>" length
-    indexEndTitle = paste.indexOf('</paste_title')
-    index = paste.indexOf('paste_key')+10   // +10 "paste_key>"
-    
-    pasteTitle = paste.slice(indexStartTitle, indexEndTitle)
-    pasteKey = paste.slice(index, index+8) // the pastes key always have 8 characters
-
-    index = pasteTitle.indexOf('$')
-
-    if(index > -1){
-      usersInboxPastes.push({
-        userHash: pasteTitle.slice(index+1),
-        pasteKey
-      })
-    } else {
-      emailsPastes.push({
-        uuid: pasteTitle,
-        pasteKey
-      })
-    }
-  })
-
-  return { usersInbox: usersInboxPastes, emails: emailsPastes }
-}
-
-async function getThisPaste(pasteKey){
-  try {
-    const response = await axios.get(`https://pastebin.com/raw/${pasteKey}`)
-
-    return response.data
+    res = await db.insertEmail(email)
+    console.log(`updated email ${res}`)
   } catch (error) {
     console.log(error)
   }

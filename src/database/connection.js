@@ -7,10 +7,10 @@ const client = new Client({
   }
 });
 
-exports.executeQuery = async function executeQuery(query){
+const executeQuery = async function executeQuery(query){
   client.connect()
   
-  client.query('SELECT table_schema,table_name FROM information_schema.tables;', (err, res) => {
+  client.query(`${query};`, (err, res) => {
     if (err) throw err
     
     client.end()
@@ -18,7 +18,7 @@ exports.executeQuery = async function executeQuery(query){
   });
 }
 
-exports.insertEmail = async function insertEmail(email){
+const insertEmail = async function insertEmail(email){
   client.connect()
   
   client.query(`INSERT INTO emails VALUES(${email.from}, ${email.to}, ${emaiç.subject}, ${email.body}, ${email.uuid}, ${email.replies};`, (err, res) => {
@@ -28,3 +28,43 @@ exports.insertEmail = async function insertEmail(email){
     return res
   });
 }
+
+const getUserInbox = async function getUserInbox(user){
+  client.connect()
+  client.query(`SELECT * FROM emails WHERE from=${user} OR to=${user};`, (err, res) => {
+    if (err) throw err
+    
+    client.end()
+    return res
+  });
+}
+
+const getEmail = async function getEmail(uuid){
+  client.connect()
+  client.query(`SELECT * FROM emails WHERE uuid=${uuid};`, (err, res) => {
+    if (err) throw err
+    
+    client.end()
+    return res
+  });
+}
+
+const updateEmailReplies = async function updateEmailReplies(email){
+  client.connect()
+  client.query(`UPDATE emails SET replies = ${email.replies} WHERE uuid = ${email.uuid};`, (err, res) => {
+    if (err) throw err
+    
+    client.end()
+    return res
+  });
+}
+
+const db = {
+  executeQuery,
+  insertEmail,
+  getUserInbox,
+  getEmail,
+  updateEmailReplies
+}
+
+module.exports = db
