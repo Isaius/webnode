@@ -88,7 +88,6 @@ const server = http.createServer(async(req, res) => {
     try {
       emails = await getUserInbox(user)
 
-      console.log(emails)
       inbox = []
 
       emails.map(email => {
