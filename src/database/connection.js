@@ -31,7 +31,7 @@ const insertEmail = async function insertEmail(email){
 
 const getUserInbox = async function getUserInbox(user){
   client.connect()
-  client.query(`SELECT * FROM emails WHERE from=${user} OR to=${user};`, (err, res) => {
+  client.query(`SELECT * FROM emails WHERE from_user='${user}' OR to_user='${user}';`, (err, res) => {
     if (err) throw err
     
     client.end()
