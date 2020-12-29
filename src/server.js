@@ -2,19 +2,7 @@ const http = require('http')
 const url = require('url')
 const fs = require('fs')
 const uuid4 = require('uuid4')
-const axiosAgent = require('axios')
-const dotenv = require('dotenv').config()
-const FormData = require('form-data')
-const crypto = require('crypto')
 const db = require('./database/connection')
-
-const axios = axiosAgent.create({
-  headers: { 
-    'Content-Type': 'multipart/form-data'
-  }
-})
-
-const baseURL = `https://pastebin.com/api/api_post.php`
 
 const port =  process.env.PORT || 3333
 
